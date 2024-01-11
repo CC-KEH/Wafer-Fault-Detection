@@ -2,8 +2,10 @@ import sys
 from src.components.data_ingestion import DataIngestion
 from src.components.data_transformation import DataTransformation
 from src.components.model_trainer import ModelTrainer
+from src.logger import logging
+from src.exception import CustomException
 
-class TrainingPipeline:
+class TrainPipeline:
     def __init__(self) -> None:
         self.data_ingestion = DataIngestion()
         self.data_transformation = DataTransformation()
@@ -18,12 +20,11 @@ class TrainingPipeline:
             train_arr,test_arr,preprocessor_path = self.data_transformation.initiate_transformation()
             
             # Model Train
-            model_name,model_r2_score = self.model_trainer.initiate_model_trainer(train_arr,test_arr,preprocessor_path)
+            model_name,model_accuracy_score = self.model_trainer.initiate_model_trainer(train_arr,test_arr,preprocessor_path)
             
-            print(f'Training Completed. Train Model Name: {model_name}, Score: {model_r2_score}')
-            
+            print(f'Training Completed. Best Trained Model Name: {model_name}, Score: {model_accuracy_score}')
             
         except Exception as e:
             pass
-            # raise CustomException(e,sys)
-        
+            raise CustomException(e,sys)
+
