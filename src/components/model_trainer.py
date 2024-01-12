@@ -11,11 +11,30 @@ from src.exception import CustomException
 from src.logger import logging
 import os
 import sys
-from src.utils import evaluate_model,load_object,save_object
+from src.utils import evaluate_model,load_object,save_object,upload_file
+from src.constant import AWS_S3_BUCKET_NAME
 
 @dataclass
 class Model_Trainer_Config:
     model_path = os.path.join('artifacts','model.pkl')
+
+class CustomModel:
+    def __init__(self, preprocessing_object, trained_model_object):
+        self.preprocessing_object = preprocessing_object
+
+        self.trained_model_object = trained_model_object
+
+    def predict(self, X):
+        transformed_feature = self.preprocessing_object.transform(X)
+
+        return self.trained_model_object.predict(transformed_feature)
+
+    def __repr__(self):
+        return f"{type(self.trained_model_object).__name__}()"
+
+    def __str__(self):
+        return f"{type(self.trained_model_object).__name__}()"
+
 
 @dataclass
 class ModelTrainer:
