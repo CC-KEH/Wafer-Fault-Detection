@@ -1,7 +1,7 @@
 from flask import Flask,request,render_template,jsonify,send_file
 from src.exception import CustomException
 from src.logger import logging
-from src.pipelines.training_pipeline import TrainPipeline
+from src.pipelines.training_pipeline import TrainingPipeline
 from src.pipelines.prediction_pipeline import PredictionPipeline
 import os,sys
 
@@ -14,8 +14,8 @@ def home():
 @app.route('/train')
 def train():
     try:
-        train_pipe = TrainPipeline()
-        train_pipe.start_pipeline()
+        train_pipe = TrainingPipeline()
+        train_pipe.run_pipeline()
         return ("Training Complete")
         
     except Exception as e:
@@ -27,7 +27,6 @@ def predict():
         if request.method == "POST":        
             pred_pipe = PredictionPipeline(request)
             pred_file_detail = pred_pipe.run_pipeline()
-            
             logging.info('Prediction Complete, Downloading Prediction File')
             return send_file(pred_file_detail.prediction_file_path,download_name=pred_file_detail.prediction_file_name,as_attachment=True)
         

@@ -1,28 +1,31 @@
-import pandas as pd 
-import numpy as np
-from dataclasses import dataclass
-from sklearn.model_selection import train_test_split
-import os 
-from src.logger import logging
-from src.exception import CustomException
-from src.constant import MONGO_DATABASE_NAME,MONGO_COLLECTION_NAME,MONGO_URI
 import sys
+import os
+import numpy as np
+import pandas as pd
+from pymongo import MongoClient
+from zipfile import Path
+from src.constant import *
+from src.exception import CustomException
+from src.logger import logging
+from src.utils import MainUtils
+from dataclasses import dataclass
+
+
 
 
 @dataclass
-class Data_Ingestion_Config:
-    train_data_path:str = os.path.join('artifacts','train.csv')
-    test_data_path:str = os.path.join('artifacts','test.csv')
-    raw_path:str = os.path.join('artifacts','raw.csv')
-
+class DataIngestionConfig:
+    artifact_folder: str = os.path.join('artifacts')
+    
 class DataIngestion:
-    def __init__(self):
-        self.data_ingestion_config = Data_Ingestion_Config()
+    def __init__(self):    
+        self.data_ingestion_config = DataIngestionConfig()
+        self.utils = MainUtils()
 
 
     def export_collection_as_dataframe(self,collection_name, db_name):
         try:
-            mongo_client = mongo_client(MONGO_URI)
+            mongo_client = MongoClient(MONGO_URI)
 
             collection = mongo_client[db_name][collection_name]
 
@@ -52,23 +55,25 @@ class DataIngestion:
         """
         try:
             logging.info(f"Exporting data from mongodb")
-            raw_file_path  = self.data_ingestion_config.raw_path
+            raw_file_path  = self.data_ingestion_config.artifact_folder
             os.makedirs(raw_file_path,exist_ok=True)
 
             sensor_data = self.export_collection_as_dataframe(collection_name= MONGO_COLLECTION_NAME,db_name = MONGO_DATABASE_NAME)
+            
 
             logging.info(f"Saving exported data into feature store file path: {raw_file_path}")
         
             feature_store_file_path = os.path.join(raw_file_path,'wafer_fault.csv')
             sensor_data.to_csv(feature_store_file_path,index=False)
            
+
             return feature_store_file_path
             
 
         except Exception as e:
             raise CustomException(e,sys)
 
-    def initiate_data_ingestion(self):
+    def initiate_data_ingestion(self) -> Path:
         """
             Method Name :   initiate_data_ingestion
             Description :   This method initiates the data ingestion components of training pipeline 
@@ -95,4 +100,4 @@ class DataIngestion:
             return feature_store_file_path
 
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(e, sys) from e

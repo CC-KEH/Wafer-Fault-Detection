@@ -27,4 +27,5 @@ numpy
 matplotlib
 seaborn
 scikit-learn
+Werkzeug==2.3.0
 # -e .
